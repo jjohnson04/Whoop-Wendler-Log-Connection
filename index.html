@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WHOOP x Wendler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --dark: #111111;
+      --card: #181818;
+      --border: #2a2a2a;
+      --whoop: #00f0a0;
+      --whoop-dim: rgba(0,240,160,0.12);
+      --warn: #ff6b35;
+      --text: #e8e8e8;
+      --muted: #666;
+      --mono: 'DM Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER */
+    header {
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(48px, 8vw, 96px);
+      letter-spacing: 2px;
+      line-height: 0.9;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--whoop);
+    }
+
+    .header-meta {
+      text-align: right;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--card);
+    }
+
+    .status-pill.connected {
+      border-color: var(--whoop);
+      color: var(--whoop);
+      background: var(--whoop-dim);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-pill.connected .dot {
+      background: var(--whoop);
+      box-shadow: 0 0 6px var(--whoop);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* CONNECT SECTION */
+    .connect-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .connect-section { grid-template-columns: 1fr; }
+    }
+
+    .connect-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 28px;
+      border-radius: 2px;
+      transition: border-color 0.2s;
+    }
+
+    .connect-card:hover { border-color: #444; }
+    .connect-card.active { border-color: var(--whoop); }
+
+    .connect-card h2 {
+      font-family: var(--display);
+      font-size: 28px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .connect-card p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      border-color: var(--whoop);
+      color: var(--whoop);
+      background: var(--whoop-dim);
+    }
+
+    .btn.primary {
+      background: var(--whoop);
+      color: var(--black);
+      border-color: var(--whoop);
+      font-weight: 500;
+    }
+
+    .btn.primary:hover {
+      background: #00d48a;
+      color: var(--black);
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* FILE INPUT */
+    .file-drop {
+      border: 1px dashed var(--border);
+      border-radius: 2px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .file-drop:hover, .file-drop.dragover {
+      border-color: var(--whoop);
+      color: var(--whoop);
+      background: var(--whoop-dim);
+    }
+
+    .file-drop input { display: none; }
+
+    /* DASHBOARD */
+    #dashboard { display: none; }
+    #dashboard.visible { display: block; }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* RECOVERY RING */
+    .recovery-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 32px;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 32px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring-score {
+      font-family: var(--display);
+      font-size: 32px;
+      line-height: 1;
+      color: var(--whoop);
+    }
+
+    .ring-label {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .recovery-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-family: var(--display);
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    .stat-value.green { color: var(--whoop); }
+    .stat-value.orange { color: var(--warn); }
+
+    /* LIFT TABLE */
+    .lift-table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead tr {
+      background: #1e1e1e;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1a1a1a;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: #1c1c1c; }
+
+    .recovery-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .recovery-badge.green { background: rgba(0,240,160,0.15); color: var(--whoop); }
+    .recovery-badge.yellow { background: rgba(255,193,7,0.15); color: #ffc107; }
+    .recovery-badge.red { background: rgba(255,107,53,0.15); color: var(--warn); }
+    .recovery-badge.none { background: #1e1e1e; color: var(--muted); }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    /* ALERT */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 2px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .alert.error { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); color: var(--warn); }
+    .alert.success { background: var(--whoop-dim); border: 1px solid rgba(0,240,160,0.3); color: var(--whoop); }
+    .alert.visible { display: block; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      margin-top: 40px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--whoop); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-inner">
+      <h1>WHOOP<br><span>×</span> WENDLER</h1>
+      <div class="header-meta">
+        Recovery meets strength<br>
+        Personal dashboard
+      </div>
+    </div>
+  </header>
+
+  <div class="status-bar">
+    <div class="status-pill" id="whoop-status">
+      <div class="dot"></div>
+      WHOOP — Not connected
+    </div>
+    <div class="status-pill" id="csv-status">
+      <div class="dot"></div>
+      Wendler — No data
+    </div>
+  </div>
+
+  <div id="alert" class="alert"></div>
+
+  <div class="connect-section">
+    <!-- WHOOP -->
+    <div class="connect-card" id="whoop-card">
+      <h2>WHOOP</h2>
+      <p>Connect your WHOOP account to pull today's recovery score, HRV, resting heart rate, and strain.</p>
+      <button class="btn primary" id="whoop-btn" onclick="connectWhoop()">Connect WHOOP</button>
+      <div id="whoop-connected" style="display:none; margin-top:12px;">
+        <span style="font-size:11px; color: var(--whoop); letter-spacing:0.08em;">✓ CONNECTED</span>
+        <button class="btn" style="margin-left:12px; font-size:10px;" onclick="disconnectWhoop()">Disconnect</button>
+      </div>
+    </div>
+
+    <!-- WENDLER CSV -->
+    <div class="connect-card" id="csv-card">
+      <h2>WENDLER</h2>
+      <p>Export your lift history from the Vandersoft app and upload the CSV here. Your data stays local.</p>
+      <label class="file-drop" id="file-drop">
+        <input type="file" id="csv-input" accept=".csv" onchange="handleCSV(event)" />
+        <div>Drop CSV here or tap to upload</div>
+      </label>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <!-- TODAY'S RECOVERY -->
+    <div class="section-label">Today's Recovery</div>
+    <div class="recovery-row" id="recovery-row">
+      <div class="ring-wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#222" stroke-width="10"/>
+          <circle id="ring-circle" cx="50" cy="50" r="42" fill="none" stroke="var(--whoop)" stroke-width="10"
+            stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"
+            style="transition: stroke-dashoffset 1s ease, stroke 0.5s ease"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-score" id="ring-score">--</div>
+          <div class="ring-label">Recovery</div>
+        </div>
+      </div>
+      <div class="recovery-stats">
+        <div class="stat">
+          <div class="stat-label">HRV</div>
+          <div class="stat-value" id="stat-hrv">--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Resting HR</div>
+          <div class="stat-value" id="stat-rhr">--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Sleep</div>
+          <div class="stat-value" id="stat-sleep">--</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Strain</div>
+          <div class="stat-value" id="stat-strain">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIFT LOG -->
+    <div class="section-label" style="margin-top:40px;">Lift History with Recovery</div>
+    <div class="lift-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Lift</th>
+            <th>Week</th>
+            <th>Weight</th>
+            <th>Sets × Reps</th>
+            <th>1RM Est.</th>
+            <th>Recovery</th>
+          </tr>
+        </thead>
+        <tbody id="lift-table-body">
+          <tr>
+            <td colspan="7">
+              <div class="empty">
+                <div class="empty-icon">◎</div>
+                Upload your Wendler CSV to see lift history
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="container">
+  <footer>
+    <span>WHOOP × Wendler Dashboard — Personal Use</span>
+    <a href="PRIVACY.md">Privacy Policy</a>
+  </footer>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────
+  // Replace with your Vercel backend URL once deployed
+  const API_BASE = 'https://your-vercel-app.vercel.app/api';
+  // ────────────────────────────────────────────────────────
+
+  let whoopData = null;
+  let liftData = [];
+
+  // Check for OAuth callback token in URL
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('access_token');
+    if (token) {
+      sessionStorage.setItem('whoop_token', token);
+      window.history.replaceState({}, '', window.location.pathname);
+      onWhoopConnected(token);
+    }
+
+    const stored = sessionStorage.getItem('whoop_token');
+    if (stored) onWhoopConnected(stored);
+
+    const csv = sessionStorage.getItem('lift_data');
+    if (csv) {
+      liftData = JSON.parse(csv);
+      renderTable();
+    }
+
+    // Drag and drop
+    const drop = document.getElementById('file-drop');
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+    drop.addEventListener('drop', e => {
+      e.preventDefault();
+      drop.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) processCSVFile(file);
+    });
+  });
+
+  function connectWhoop() {
+    window.location.href = `${API_BASE}/auth`;
+  }
+
+  function disconnectWhoop() {
+    sessionStorage.removeItem('whoop_token');
+    whoopData = null;
+    document.getElementById('whoop-connected').style.display = 'none';
+    document.getElementById('whoop-btn').style.display = 'inline-flex';
+    setStatus('whoop-status', false, 'WHOOP — Not connected');
+    renderTable();
+    checkDashboard();
+  }
+
+  async function onWhoopConnected(token) {
+    document.getElementById('whoop-btn').style.display = 'none';
+    document.getElementById('whoop-connected').style.display = 'block';
+    document.getElementById('whoop-card').classList.add('active');
+    setStatus('whoop-status', true, 'WHOOP — Connected');
+
+    try {
+      const res = await fetch(`${API_BASE}/recovery`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch recovery data');
+      whoopData = await res.json();
+      renderRecovery();
+      renderTable();
+      showDashboard();
+    } catch (err) {
+      showAlert('Could not load WHOOP data. Check your connection and try again.', 'error');
+    }
+  }
+
+  function renderRecovery() {
+    if (!whoopData) return;
+    const r = whoopData.recovery_score ?? 0;
+    const hrv = whoopData.hrv_rmssd_milli ? (whoopData.hrv_rmssd_milli / 1000).toFixed(1) : '--';
+    const rhr = whoopData.resting_heart_rate ?? '--';
+    const sleep = whoopData.sleep_performance_percentage ? whoopData.sleep_performance_percentage + '%' : '--';
+    const strain = whoopData.strain ? whoopData.strain.toFixed(1) : '--';
+
+    document.getElementById('ring-score').textContent = r;
+    document.getElementById('stat-hrv').textContent = hrv !== '--' ? hrv + ' ms' : '--';
+    document.getElementById('stat-rhr').textContent = rhr !== '--' ? rhr + ' bpm' : '--';
+    document.getElementById('stat-sleep').textContent = sleep;
+    document.getElementById('stat-strain').textContent = strain;
+
+    // color ring
+    const circle = document.getElementById('ring-circle');
+    const offset = 264 - (264 * r / 100);
+    circle.style.strokeDashoffset = offset;
+    if (r >= 67) circle.style.stroke = 'var(--whoop)';
+    else if (r >= 34) circle.style.stroke = '#ffc107';
+    else circle.style.stroke = 'var(--warn)';
+
+    // color stat
+    const scoreEl = document.getElementById('ring-score');
+    if (r >= 67) scoreEl.style.color = 'var(--whoop)';
+    else if (r >= 34) scoreEl.style.color = '#ffc107';
+    else scoreEl.style.color = 'var(--warn)';
+  }
+
+  function handleCSV(e) {
+    const file = e.target.files[0];
+    if (file) processCSVFile(file);
+  }
+
+  function processCSVFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        liftData = parseCSV(e.target.result);
+        sessionStorage.setItem('lift_data', JSON.stringify(liftData));
+        document.getElementById('csv-card').classList.add('active');
+        setStatus('csv-status', true, `Wendler — ${liftData.length} entries`);
+        renderTable();
+        showDashboard();
+        showAlert(`Loaded ${liftData.length} lift entries`, 'success');
+      } catch(err) {
+        showAlert('Could not parse CSV. Make sure it\'s exported from the Vandersoft Wendler app.', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    return lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const row = {};
+      headers.forEach((h, i) => row[h] = vals[i] || '');
+      return row;
+    }).filter(r => Object.values(r).some(v => v));
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('lift-table-body');
+    if (!liftData.length) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">◎</div>Upload your Wendler CSV to see lift history</div></td></tr>`;
+      return;
+    }
+
+    // Sort by date desc
+    const sorted = [...liftData].sort((a, b) => {
+      const da = new Date(a.date || a['workout date'] || 0);
+      const db = new Date(b.date || b['workout date'] || 0);
+      return db - da;
+    });
+
+    tbody.innerHTML = sorted.slice(0, 50).map(row => {
+      const date = row.date || row['workout date'] || row['Date'] || '';
+      const lift = row.lift || row['exercise'] || row['lift name'] || row['Lift'] || '';
+      const week = row.week || row['Week'] || '';
+      const weight = row.weight || row['Weight'] || row['working weight'] || '';
+      const sets = row.sets || row['Sets'] || '';
+      const reps = row.reps || row['Reps'] || '';
+      const orm = row['1rm'] || row['one rep max'] || row['estimated 1rm'] || '';
+
+      const recovery = whoopData ? getRecoveryForDate(date) : null;
+      const badge = recovery !== null ? recoveryBadge(recovery) : `<span class="recovery-badge none">—</span>`;
+
+      return `<tr>
+        <td>${formatDate(date)}</td>
+        <td>${lift}</td>
+        <td>${week ? 'W' + week : ''}</td>
+        <td>${weight ? weight + ' lbs' : ''}</td>
+        <td>${sets && reps ? sets + '×' + reps : ''}</td>
+        <td>${orm ? orm + ' lbs' : ''}</td>
+        <td>${badge}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function getRecoveryForDate(dateStr) {
+    // In a real implementation this would match WHOOP history by date
+    // For now returns today's score for today's date
+    if (!whoopData) return null;
+    const today = new Date().toISOString().split('T')[0];
+    const d = new Date(dateStr).toISOString().split('T')[0];
+    if (d === today) return whoopData.recovery_score;
+    return null;
+  }
+
+  function recoveryBadge(score) {
+    if (score === null || score === undefined) return `<span class="recovery-badge none">—</span>`;
+    const cls = score >= 67 ? 'green' : score >= 34 ? 'yellow' : 'red';
+    return `<span class="recovery-badge ${cls}">${score}%</span>`;
+  }
+
+  function formatDate(str) {
+    if (!str) return '';
+    try {
+      return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+    } catch { return str; }
+  }
+
+  function showDashboard() {
+    document.getElementById('dashboard').classList.add('visible');
+  }
+
+  function checkDashboard() {
+    if (!whoopData && !liftData.length) {
+      document.getElementById('dashboard').classList.remove('visible');
+    }
+  }
+
+  function setStatus(id, active, label) {
+    const el = document.getElementById(id);
+    el.className = 'status-pill' + (active ? ' connected' : '');
+    el.innerHTML = `<div class="dot"></div>${label}`;
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alert');
+    el.className = `alert ${type} visible`;
+    el.textContent = msg;
+    setTimeout(() => el.classList.remove('visible'), 4000);
+  }
+</script>
+</body>
+</html>
