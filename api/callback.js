@@ -1,6 +1,4 @@
 // api/callback.js
-// Exchanges WHOOP auth code for access token and redirects back to the dashboard
-
 export default async function handler(req, res) {
   const { code } = req.query;
 
@@ -26,18 +24,20 @@ export default async function handler(req, res) {
       }),
     });
 
+    const raw = await tokenRes.text();
+
     if (!tokenRes.ok) {
-      const err = await tokenRes.text();
-      console.error('Token exchange failed:', err);
-      return res.status(500).json({ error: 'Token exchange failed' });
+      return res.status(500).json({ 
+        error: 'Token exchange failed', 
+        status: tokenRes.status,
+        detail: raw,
+        redirect_uri_used: redirectUri,
+      });
     }
 
-    const { access_token } = await tokenRes.json();
-
-    // Redirect back to dashboard with token in URL param (session only)
+    const { access_token } = JSON.parse(raw);
     res.redirect(`${dashboardUrl}?access_token=${access_token}`);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: err.message });
   }
 }
